@@ -1,36 +1,79 @@
 import pygame
 import sys
-import os
+import time
 
 sudoku_start_map = [
-    [5, 3, 0,       0, 7, 0,        0, 0, 0],
-    [6, 0, 0,       1, 9, 5,        0, 0, 0],
-    [0, 9, 8,       0, 0, 0,        0, 6, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
 
-    [8, 0, 0,       0, 6, 0,        0, 0, 3],
-    [4, 0, 0,       8, 0, 3,        0, 0, 1],
-    [7, 0, 0,       0, 2, 0,        0, 0, 6],
 
-    [0, 6, 0,       0, 0, 0,        2, 8, 0],
-    [0, 0, 0,       4, 1, 9,        0, 0, 5],
-    [0, 0, 0,       0, 8, 0,        0, 7, 9]
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    
+
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0],
+    [0, 0, 0,       0, 0, 0,        0, 0, 0]
 ]
 
-sudoku_solution_map = [
-    [5, 3, 4,       6, 7, 8,        9, 1, 2],
-    [6, 7, 2,       1, 9, 5,        3, 4, 8],
-    [1, 9, 8,       3, 4, 2,        5, 6, 7],
+
+def solve(bo):
+    find = find_empty(bo)
+    if not find:
+        return True
+    else:
+        row, col = find
+
+    for i in range(1,10):
+        if valid(bo, i, (row, col)):
+            bo[row][col] = i
+            if solve(bo):
+                return True
+            
+            bo[row][col] = 0
+    return False
     
-    
-    [8, 5, 9,       7, 6, 1,        4, 2, 3],
-    [4, 2, 6,       8, 5, 3,        7, 9, 1],
-    [7, 1, 3,       9, 2, 4,        8, 5, 6],
-    
-    
-    [9, 6, 1,       5, 3, 7,        2, 8, 4],
-    [2, 8, 7,       4, 1, 9,        6, 3, 5],
-    [3, 4, 5,       2, 8, 6,        1, 7, 9]
-]
+
+
+def valid(bo, num, pos):
+    # Check row
+    for i in range(len(bo[0])):
+        if bo[pos[0]][i] == num and pos[1] != i:
+            return False
+
+    # Check column
+    for i in range(len(bo)):
+        if bo[i][pos[1]] == num and pos[0] != i:
+            return False
+
+    # Check box
+    box_x = pos[1] // 3
+    box_y = pos[0] // 3
+
+    for i in range(box_y*3, box_y*3 + 3):
+        for j in range(box_x * 3, box_x*3 + 3):
+            if bo[i][j] == num and (i,j) != pos:
+                return False
+
+    return True
+
+
+def find_empty(bo):
+    for i in range(len(bo)):
+        for j in range(len(bo[0])):
+            if bo[i][j] == 0:
+                return (i, j)  # row, col
+
+    return None
+
+
+
+
+
+
+
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
@@ -42,10 +85,10 @@ SUDOKU_MAP_STARTİNG_Y = SCREEN_HEIGHT/2 - SUDOKU_MAP_HEIGHT/2
 
 CELL_SIZE = SUDOKU_MAP_WIDTH // 9
 
-WHITE = (255, 255, 255)
+WHITE = (225, 205, 205)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
-GREEN = (0,240,20)
+GREEN = (200,50,100)
 
 pygame.init()
 
@@ -53,6 +96,7 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Team 1 Sudoku Solver")
 
+clicked_solve = 0
 
 def draw_board():
     for i in range(0, 10):
@@ -63,6 +107,11 @@ def draw_board():
         else:
             pygame.draw.line(screen, BLACK, (i * CELL_SIZE + SUDOKU_MAP_STARTİNG_X,SUDOKU_MAP_STARTİNG_Y),(i * CELL_SIZE + SUDOKU_MAP_STARTİNG_X, SUDOKU_MAP_HEIGHT + SUDOKU_MAP_STARTİNG_Y), 2)
             pygame.draw.line(screen, BLACK, (SUDOKU_MAP_STARTİNG_X,i * CELL_SIZE + SUDOKU_MAP_STARTİNG_Y), (SUDOKU_MAP_WIDTH + SUDOKU_MAP_STARTİNG_X, i * CELL_SIZE + SUDOKU_MAP_STARTİNG_Y), 2)
+    pygame.draw.rect(screen,BLACK,(200,930,400,100),10,10)
+    
+    font = pygame.font.Font(None, 56)
+    text = font.render("Click 'k' to solve", False, GREEN)
+    screen.blit(text, (255,960))
 
 
 def draw_numbers(board):
@@ -72,24 +121,21 @@ def draw_numbers(board):
             if board[i][j] != 0:
                 text = font.render(str(board[i][j]), False, BLACK)
                 screen.blit(text, (j * CELL_SIZE + CELL_SIZE/2 - 10 + SUDOKU_MAP_STARTİNG_X, i * CELL_SIZE + CELL_SIZE/2 -10 + SUDOKU_MAP_STARTİNG_Y))
+
     text_game = font.render("Game", False, BLUE)
     screen.blit(text_game, (370,100))
-    text_solutions = font.render("Solutions", False, BLUE)
+    text_solutions = font.render("Solution", False, BLUE)
     screen.blit(text_solutions, (1270,100))
 
-# def solve_the_thing_please(board_game,board_solution):
-#     for str_o in range(9): #o as in out
-#         for stn_o in range(9):
-#             if board_game[str_o][stn_o] == 0:
-#                 for str_i in range():
-                    
-                
+
+
 
 
 def main():
 
     clock = pygame.time.Clock()
     selected = None
+    clicked_solve = 0
 
 
     while True:
@@ -129,14 +175,19 @@ def main():
                         NumberEnter = 8
                     elif event.key == pygame.K_9:
                         NumberEnter = 9
+                    elif event.key == pygame.K_k:
+                        clicked_solve = 1
 
-                
+        
 
         screen.fill(WHITE)
         draw_board()
         draw_numbers(sudoku_start_map)
 
-
+        if (clicked_solve):
+            solve(sudoku_start_map)
+            clicked_solve = 0
+        
 
         if selected:
             pygame.draw.rect(screen, GREEN, (selected[0] * CELL_SIZE + SUDOKU_MAP_STARTİNG_X, selected[1] * CELL_SIZE + SUDOKU_MAP_STARTİNG_Y, CELL_SIZE, CELL_SIZE), 5)
@@ -149,6 +200,8 @@ def main():
 
 
         pygame.display.flip()
-        clock.tick(30)
+        clock.tick(1000)
 NumberEnter = 0
 main()
+
+
