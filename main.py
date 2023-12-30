@@ -35,7 +35,8 @@ def solve(bo):
             bo[row][col] = 0
     return False
     
-
+def kazandiniz(bo):
+    pass #this place going to control if the player has won
 
 def valid(bo, num, pos):
     # Check row
