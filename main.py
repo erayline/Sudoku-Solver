@@ -1,7 +1,6 @@
 import pygame
 import sys
 import time
-
 sudoku_start_map = [
     [0, 0, 0,       0, 0, 0,        0, 0, 0],
     [0, 0, 0,       0, 0, 0,        0, 0, 0],
